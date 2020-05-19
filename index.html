@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CSS / SVG generator waves">
+  <meta name="keywords" content="CSS, SVG, generator, waves, style">
+  <meta name="author" content="Jero Soler">
+
+  <title>SVG Generator Waves</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.min.css" integrity="sha256-cuvic28gVvjQIo3Q4hnRpQSNB0aMw3C+kjkR0i+hrWg=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-tomorrow.min.css" integrity="sha256-xevuwyBEb2ZYh4nDhj0g3Z/rDBnM569hg9Vq6gEw/Sg=" crossorigin="anonymous" />
+  <!-- import JavaScript -->
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+  
+  
+  
+
+
+</head>
+<body id="container">
+  <div id="app">
+  <div id="header">
+    <h1>SVG Generator Waves</h1>
+  </div>
+  <div id="svg">
+  <svg viewBox="0 0 0 0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path fill="rgba(47, 73, 94, 1)" d="" stroke-width="0"></path>
+  <path fill="rgba(47, 73, 94, 1)" d="" stroke-width="0"></path>
+  <path fill="rgba(47, 73, 94, 1)" d="" stroke-width="0" v-for="(p, index) in points-1"></path>
+  </svg>
+  </div>
+
+  
+  
+  <div id="generator" class="grid">
+    <div class="bol" v-for="(p, index) in points">{{ index+1 }}</div>
+    <el-slider
+    v-model="height"
+    :min="50"
+    :max="500"
+    vertical
+    height="40px"
+    @input="changeheight" style="position: relative; top: 5px; width: 5px;">
+    </el-slider>
+    <el-button type="default" icon="el-icon-plus" @click="addpoint" size="mini" circle style="float: right;     right: 5px;     position: relative;    top: -35px;    cursor: pointer;"></el-button>
+    <el-button type="default" v-if="points > 1" icon="el-icon-minus" @click="removepoint" size="mini" circle style="float: right;     right: -23px;     position: relative;    top: 0px;    cursor: pointer;"></el-button>
+  </div>
+  
+
+  <div  class="controls">
+   
+        
+    <el-row :gutter="20">
+      <el-col :span="4">
+        <el-slider
+          v-model="start_y"
+          :min="0"
+          :max="height"
+          vertical
+          height="200px"
+          @input="reload">
+        </el-slider>
+      </el-col>
+      
+      <el-col :span="16">
+        
+
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-color-picker v-model="colorHeader" @change="changeHeader" @active-change="changeHeaderLive" show-alpha></el-color-picker>
+          </el-col>
+          <el-col :span="8" style="text-align:center;">
+            <i class="el-icon-d-caret" @click="reversecolors"></i>
+          </el-col>
+          <el-col :span="8" style="text-align:right;">
+            <el-color-picker v-model="colorBackground" @change="changeBackground" @active-change="changeBackgroundLive" show-alpha></el-color-picker>
+          </el-col>
+        </el-row>
+        <br>
+        <el-select v-model="type" placeholder="Select" @change="reload">
+          <el-option
+            v-for="item in optionstypes"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+        <div v-if="type == 'curve'">
+          <br>
+
+          <el-slider
+            v-model="curveprecision"
+            :min="0.1"
+            :step="0.1"
+            :max="1"
+            
+            @input="reload">
+          </el-slider>
+        </div>
+        <el-button type="primary" style="width: 100%; margin-top: 10px" @click="dialogVisible = true; exportcode();">Export</el-button>
+        <el-dialog
+        title="Export"
+        :visible.sync="dialogVisible"
+        width="30%"
+        @opened="dialogVisibleOpenend"
+        >
+        
+        <p>SVG</p>
+        <pre><code id="codesvg" class="language-svg"></code></pre>
+        <el-button type="primary" style="width: 100%; margin-top: 10px" v-clipboard:copy="codesvg" v-clipboard:success="copied">Copy!!</el-button>
+
+        <p>CSS</p>
+        <pre><code id="code" class="language-css"></code></pre>
+        <el-button type="primary" style="width: 100%; margin-top: 10px" v-clipboard:copy="code" v-clipboard:success="copied">Copy!!</el-button>
+
+        <p>For reverse</p>
+        <pre><code class="language-css">transform: rotate(180deg);</code></pre>
+
+        <p>For Rotate</p>
+        <pre><code class="language-css">transform: rotateY(180deg);</code></pre>
+
+        <p>For Rotate & Reverse</p>
+        <pre><code class="language-css">transform: rotate(180deg) rotateY(180deg);</code></pre>
+      </el-dialog>
+
+      
+               
+
+      </el-col>
+      <el-col :span="4">
+        <el-slider
+          v-model="end_y"
+          :min="0"
+          :max="height"
+          vertical
+          height="200px"
+          @input="reload">
+        </el-slider>
+      </el-col>
+    </el-row>
+    
+    
+    
+  </div>
+    
+  
+
+
+  <!-- Examples -->
+  <div class="wrapper">
+    <h1 style="text-align:center; margin-top: 100px; margin-bottom: 100px;">Examples</h1>
+
+    <div class="examples" >
+          <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+            <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+            <div style="padding: 14px;">
+              <span>Yummy hamburger</span>
+              <div class="bottom clearfix">
+                <time class="time"></time>
+                <el-button type="text" class="button">Operating</el-button>
+              </div>
+            </div>
+          </el-card>
+    </div>
+    <div class="ex div0"></div>
+
+    <div class="ex div0 reverse"></div>
+    <div class="examples" >
+      <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+        <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div style="padding: 14px;">
+          <span>Yummy hamburger</span>
+          <div class="bottom clearfix">
+            <time class="time"></time>
+            <el-button type="text" class="button">Operating</el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>  
+
+    <div class="ex div1 reverse"></div>
+    <div class="examples" >
+      <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+        <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div style="padding: 14px;">
+          <span>Yummy hamburger</span>
+          <div class="bottom clearfix">
+            <time class="time"></time>
+            <el-button type="text" class="button">Operating</el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <div class="ex div1"></div>
+
+
+    <div class="ex div2 reverse"></div>
+    <div class="examples" >
+      <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+        <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div style="padding: 14px;">
+          <span>Yummy hamburger</span>
+          <div class="bottom clearfix">
+            <time class="time"></time>
+            <el-button type="text" class="button">Operating</el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <div class="ex div2"></div>
+
+
+    <div class="ex div3 reverse"></div>
+    <div class="examples" >
+      <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+        <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div style="padding: 14px;">
+          <span>Yummy hamburger</span>
+          <div class="bottom clearfix">
+            <time class="time"></time>
+            <el-button type="text" class="button">Operating</el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <div class="ex div3"></div>
+
+
+    <div class="ex div4 reverse"></div>
+    <div class="examples" >
+      <el-card :body-style="{ padding: '0px' }"  v-for="(o, index) in 3" :key="o" :class="index > 0 ? 'hidden' : ''">
+        <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div style="padding: 14px;">
+          <span>Yummy hamburger</span>
+          <div class="bottom clearfix">
+            <time class="time"></time>
+            <el-button type="text" class="button">Operating</el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <div class="ex div4"></div>
+
+  
+    <div id="footer">
+      Made by <a href="https://github.com/jerosoler">Jero Soler</a> with ❤️
+    </div>
+  </div>
+
+
+  
+  
+  </div>
+  <script src="src/index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js" integrity="sha256-3teItwIfMuVB74Alnxw/y5HAZ2irOsCULFff3EgbtEs=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-css.min.js" integrity="sha256-4ut/7XCv/zjtcNF9GlQL+Jpy3AuQlLt2ExXNtIjZ8Po=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-clipboard2/0.3.1/vue-clipboard.js" integrity="sha256-QkKPHK8kzQ3rk/xcXnrsn20iDG6is/Ds8oMJuawDy3s=" crossorigin="anonymous"></script>
+   <a href="https://github.com/jerosoler/css-svg-generator-waves" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+</body>
+<script>
+ 
+
+</script>
+<style>
+  :root {
+    --background: rgba(90, 155, 203, 1);
+    --colorcurve: #2f495e;
+  }
+  
+  html, body {
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    background: var(--background);
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+    
+    font-family: 'Roboto', sans-serif;
+  }
+  #header {
+    display: block;
+    position: relative;
+    width: 100%; 
+    height: 100px;
+    background: var(--colorcurve);
+    border-bottom: 2px dashed white;
+    margin: auto;
+    text-align: center;
+    color: white;
+  }
+  #header h1, h1 {
+    margin: 0px;
+    padding-top: 25px;
+    text-shadow: 0 0 3px #000000;
+    text-transform: uppercase;
+    margin-left: 25px;
+    margin-right: 25px;
+    color: white;
+  }
+  #container {
+    position: relative;
+  }
+
+  #footer {
+    display: block;
+    position: relative;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    
+    background: var(--colorcurve);
+    color: white;
+    text-align:center;
+    text-shadow: 0 0 3px #000000;
+    margin-top: 40px;
+  }
+  #footer a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  #svg {
+    position: relative;
+    
+    
+  }
+  #svg > svg {
+    position: absolute;
+    transform: translate(0px,0);
+    overflow: visible!important
+  }
+  #svg > svg path {
+    transform: translate(-0px,-0);
+    fill: var(--colorcurve);
+  }
+
+  #svg > svg path:nth-child(2) {
+    /* fill: #ff00002e; */
+  }
+
+  #svg:hover + #generator .bol  {
+    display: block;
+  }
+
+  .controls {
+    position: relative; 
+    top: 20px; 
+    padding: 20px 10px;
+    margin: auto;
+    width: 300px;
+    height: 200px;
+    border-radius: 4px;
+    background: white;
+    -webkit-box-shadow: 0 0 2px 2px #ffffff;
+    box-shadow: 0 0 2px 2px #ffffff;
+  }
+
+  .el-icon-d-caret {
+    cursor:pointer;
+    transform: rotate(90deg);
+    position: relative;
+    top: 10px;
+  }
+
+  #generator {
+   height: 200px;
+   display: block;
+   width: 100%;
+   border-bottom: 2px dashed white;
+   
+  }
+  .grid {
+    background: transparent;
+    background-size: 25px 25px;
+    
+  }
+
+  #svg:hover + #generator.grid, .grid:hover {
+    background-image: linear-gradient(to right, #f1f1f1 1px, #eb000000 1px), linear-gradient(to bottom, #f1f1f1 1px, transparent 1px);   
+  }
+
+  #generator:hover .bol {
+    display: block;
+  }
+  .bol {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #409EFF;
+    position: absolute;
+    cursor: move;
+    top: 250px;
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+    left: calc(50% - 11px);
+    transform: translate(8px, 0px);
+  }
+
+  #mydiv {
+  position: absolute;
+  z-index: 9;
+  background-color: #f1f1f1;
+  text-align: center;
+  border: 1px solid #d3d3d3;
+}
+
+#mydivheader {
+  padding: 10px;
+  cursor: move;
+  z-index: 10;
+  background-color: #2196F3;
+  color: #fff;
+}
+
+.language-css .token.string, .style .token.string, .token.entity, .token.operator, .token.url {
+  background: none;
+}
+
+code[class*=language-], pre[class*=language-] {
+  text-shadow: none;
+}
+pre {
+  border-radius: 4px;
+}
+
+.el-dialog {
+  min-width: 340px;
+}
+
+.el-message {
+  min-width: 300px;
+}
+
+/* EXAMPLES */
+.wrapper {
+  clear:both;
+  display: block;
+  position: relative;
+  
+}
+.examples {
+  position: relative;
+  padding: 50px;
+  color: black;
+  display: block;
+  min-height: 80px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.examples .el-card {
+  margin-left: 25px;
+  margin-right: 25px;
+}
+.ex {
+  display: block;
+  position: relative;
+  top: -2px;
+  height: 200px;
+  
+  background-repeat: no-repeat;
+  background-size: cover; 
+}
+
+.div0 {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1888 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(255, 255, 255, 1)" d="M 0 0 C 477.5 0 477.5 110 955 110 L 955 110 L 955 0 L 0 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 954 110 C 1421 110 1421 0 1888 0 L 1888 0 L 1888 0 L 954 0 Z" stroke-width="0"></path> </svg>');
+}
+
+.div1 {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1889 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(255, 255, 255, 1)" d="M 0 0 L 955 110 L 955 0 L 0 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 954 110 L 1905 200 L 1905 0 L 954 0 Z" stroke-width="0"></path> </svg>');
+
+}
+
+.div2 {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1889 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(255, 255, 255, 1)" d="M 0 0 C 71 0 71 63 142 63 L 142 63 L 142 0 L 0 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 141 63 C 240.5 63 240.5 23 340 23 L 340 23 L 340 0 L 141 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 339 23 C 460 23 460 65 581 65 L 581 65 L 581 0 L 339 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 580 65 C 678.5 65 678.5 30 777 30 L 777 30 L 777 0 L 580 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 776 30 C 884 30 884 64 992 64 L 992 64 L 992 0 L 776 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 991 64 C 1112 64 1112 25 1233 25 L 1233 25 L 1233 0 L 991 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1232 25 C 1337.5 25 1337.5 61 1443 61 L 1443 61 L 1443 0 L 1232 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1442 61 C 1544 61 1544 23 1646 23 L 1646 23 L 1646 0 L 1442 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1645 23 C 1723 23 1723 57 1801 57 L 1801 57 L 1801 0 L 1645 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1800 57 C 1852.5 57 1852.5 0 1905 0 L 1905 0 L 1905 0 L 1800 0 Z" stroke-width="0"></path></svg>');
+}
+
+.div3 {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1889 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(255, 255, 255, 1)" d="M 0 0 C 144 0 0 59 144 59 L 144 59 L 144 0 L 0 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 143 59 C 313 59 143 22 313 22 L 313 22 L 313 0 L 143 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 312 22 C 411 22 312 59 411 59 L 411 59 L 411 0 L 312 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 410 59 C 1422 59 410 59 1422 59 L 1422 59 L 1422 0 L 410 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1421 59 C 1571 59 1421 19 1571 19 L 1571 19 L 1571 0 L 1421 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1570 19 C 1715 19 1570 57 1715 57 L 1715 57 L 1715 0 L 1570 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1714 57 C 1905 57 1714 0 1905 0 L 1905 0 L 1905 0 L 1714 0 Z" stroke-width="0"></path></svg>');
+}
+
+.div4 {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1889 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(255, 255, 255, 1)" d="M 0 200 C 212.5 200 212.5 11 425 11 L 425 11 L 425 0 L 0 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 424 11 C 687 11 687 192 950 192 L 950 192 L 950 0 L 424 0 Z" stroke-width="0"></path> <path fill="rgba(255, 255, 255, 1)" d="M 949 192 C 1192 192 1192 13 1435 13 L 1435 13 L 1435 0 L 949 0 Z" stroke-width="0"></path><path fill="rgba(255, 255, 255, 1)" d="M 1434 13 C 1669.5 13 1669.5 200 1905 200 L 1905 200 L 1905 0 L 1434 0 Z" stroke-width="0"></path></svg>');
+}
+
+@media (max-width:1888px) {
+  .ex {
+    background-size: contain;
+    
+  } 
+  .el-card.hidden {
+    display: none;
+  }
+}
+
+.reverse {
+  transform: rotate(180deg);
+  top: 2px;
+  margin-bottom: 0px;  
+}
+
+
+
+</style>
+</html>
+
