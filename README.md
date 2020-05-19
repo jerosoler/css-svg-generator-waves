@@ -2,6 +2,8 @@
 
 ![Demo](https://github.com/jerosoler/css-svg-generator-waves/raw/master/csssvggeneratorwaves.png)
 
+[PLAY](https://jerosoler.github.io/css-svg-generator-waves/)
+
 Simple wave generator for your page creations
 
 ## Features 
